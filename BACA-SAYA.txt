@@ -1,0 +1,91 @@
+IPGuard - Penjaga IP PC Penerima Hasil Alat
+=============================================
+
+Fungsi
+------
+- Mengecek pengaturan IP PC setiap 1 menit dan saat PC dinyalakan.
+- Jika IP / subnet / gateway / DNS diubah, atau diubah ke DHCP, atau adapter
+  LAN di-disable -> otomatis DIKEMBALIKAN ke pengaturan yang benar.
+- Mencatat setiap perubahan (jam + user yang sedang login) ke log.
+- Menampilkan pesan peringatan ke user setelah IP dikembalikan
+  (khusus Windows Pro/Enterprise; Windows Home tidak punya msg.exe).
+- Memasang wallpaper info IP dan MENGUNCINYA agar tidak bisa diganti user.
+- Mendeteksi IP conflict (IP dipakai perangkat lain) di Windows 8/10/11.
+
+Kompatibel Windows 7, 8, 10, 11.
+
+
+Isi folder
+----------
+  INSTALL.bat                    -> pemasangan (klik 2x, setujui UAC)
+  UNINSTALL.bat                  -> pembongkaran
+  CEK-STATUS.bat                 -> lihat status task + log terakhir
+  Install-IPGuard.ps1            -> dipanggil INSTALL.bat
+  Uninstall-IPGuard.ps1          -> dipanggil UNINSTALL.bat
+  IPGuard.ps1                    -> script penjaga (dijalankan Task Scheduler)
+  wallpaper-192.168.7.70.jpg     -> wallpaper PC 1
+  wallpaper-192.168.7.237.jpg    -> wallpaper PC 2
+
+
+Cara pasang (lakukan di masing-masing PC)
+-----------------------------------------
+1. Pastikan IP PC SUDAH BENAR dan alat sudah bisa kirim hasil.
+   (Installer merekam pengaturan IP, subnet mask, gateway, dan DNS yang
+   sedang aktif sebagai pengaturan "yang benar".)
+2. Extract SELURUH isi ZIP ke satu folder (misal Desktop\IPGuard).
+   Jangan dijalankan langsung dari dalam ZIP.
+3. Klik 2x INSTALL.bat -> setujui UAC (login/password Administrator).
+4. Periksa pengaturan yang ditampilkan, ketik Y lalu Enter.
+5. Installer otomatis memilih wallpaper sesuai IP PC tersebut.
+   Wallpaper muncul setelah sign out / restart.
+6. Setelah selesai, folder hasil extract boleh dihapus. File yang dipakai
+   sudah disalin ke C:\ProgramData\IPGuard
+
+
+Tes (disarankan sekali setelah pasang)
+--------------------------------------
+1. Ubah IP PC ke IP lain secara manual (misal .71), lalu klik OK.
+2. Tunggu maksimal 1 menit.
+3. IP harus kembali ke semula, dan muncul pesan peringatan di layar.
+4. Jalankan CEK-STATUS.bat -> di log terlihat baris "DIUBAH" dan
+   "berhasil DIKEMBALIKAN".
+
+
+Lokasi log
+----------
+  C:\ProgramData\IPGuard\IPGuard.log
+  Event Viewer > Windows Logs > Application > Source: IPGuard
+     Event ID 1000 = info, 2000 = peringatan (IP diubah/conflict), 3000 = error
+
+
+Maintenance oleh Tim IT
+-----------------------
+Matikan sementara (misal mau ganti kabel/switch, cek jaringan):
+    schtasks /Change /TN IPGuard /DISABLE
+Hidupkan lagi:
+    schtasks /Change /TN IPGuard /ENABLE
+(jalankan di Command Prompt "Run as administrator")
+
+Mengganti IP resmi PC (misal pindah segmen jaringan):
+    1. Matikan task (perintah di atas).
+    2. Ubah IP secara manual ke IP baru.
+    3. Jalankan INSTALL.bat lagi. Pengaturan baru akan direkam.
+       Jika IP baru bukan .70 / .237, jalankan dari PowerShell Administrator:
+       .\Install-IPGuard.ps1 -TargetIP 192.168.x.x -SkipWallpaper
+
+Ganti NIC / kartu jaringan:
+    Jalankan INSTALL.bat lagi setelah IP di NIC baru diset benar.
+
+Mengubah interval pengecekan (misal 5 menit):
+    .\Install-IPGuard.ps1 -IntervalMinutes 5
+
+
+Catatan penting
+---------------
+- User yang punya hak Administrator tetap BISA mematikan IPGuard
+  (menghapus task / folder). IPGuard mencegah perubahan tidak sengaja dan
+  mengembalikan perubahan otomatis, tapi bukan pengaman mutlak. Untuk
+  perlindungan penuh, jadikan akun operator sebagai Standard User.
+- Kunci wallpaper memakai policy registry. Di Windows edisi Home, kunci ini
+  bisa saja tidak berlaku; wallpaper tetap bisa dipasang manual.
+- Uninstall TIDAK mengubah pengaturan IP PC.
